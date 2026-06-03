@@ -1,6 +1,8 @@
 import cv2
 import time
 import mediapipe as mp
+import mediapipe.python.solutions.hands as mp_hands_module
+import mediapipe.python.solutions.drawing_utils as mp_drawing_module
 
 class HandTracker:
     def __init__(self, camera_index=0, detection_confidence=0.7):
@@ -8,12 +10,12 @@ class HandTracker:
         self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         
-        self.mp_hands = mp.solutions.hands
+        self.mp_hands = mp_hands_module
         self.hands = self.mp_hands.Hands(
             max_num_hands=1,
             min_detection_confidence=detection_confidence
         )
-        self.mp_drawing = mp.solutions.drawing_utils
+        self.mp_drawing = mp_drawing_module
         self.prev_time = 0
 
     def get_frame_and_landmarks(self):
