@@ -1,8 +1,17 @@
 import cv2
 import time
 import mediapipe as mp
-import mediapipe.python.solutions.hands as mp_hands_module
-import mediapipe.python.solutions.drawing_utils as mp_drawing_module
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+
+HAND_CONNECTIONS = [
+    (0,1), (1,2), (2,3), (3,4),
+    (0,5), (5,6), (6,7), (7,8),
+    (5,9), (9,10), (10,11), (11,12),
+    (9,13), (13,14), (14,15), (15,16),
+    (13,17), (17,18), (18,19), (19,20),
+    (0,17)
+]
 
 class HandTracker:
     def __init__(self, camera_index=0, detection_confidence=0.7):
@@ -10,12 +19,14 @@ class HandTracker:
         self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         
-        self.mp_hands = mp_hands_module
-        self.hands = self.mp_hands.Hands(
-            max_num_hands=1,
-            min_detection_confidence=detection_confidence
+        base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+        options = vision.HandLandmarkerOptions(
+            base_options=base_options,
+            num_hands=1,
+            min_hand_detection_confidence=detection_confidence,
+            min_tracking_confidence=detection_confidence
         )
-        self.mp_drawing = mp_drawing_module
+        self.detector = vision.HandLandmarker.create_from_options(options)
         self.prev_time = 0
 
     def get_frame_and_landmarks(self):
@@ -25,15 +36,25 @@ class HandTracker:
             
         frame = cv2.flip(frame, 1)
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.hands.process(frame_rgb)
+        
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+        results = self.detector.detect(mp_image)
         
         landmarks_list = None
-        if results.multi_hand_landmarks:
-            hand_landmarks = results.multi_hand_landmarks[0]
-            self.mp_drawing.draw_landmarks(
-                frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
+        if results.hand_landmarks:
+            hand_landmarks = results.hand_landmarks[0]
+            
+            for lm in hand_landmarks:
+                x, y = int(lm.x * self.frame_width), int(lm.y * self.frame_height)
+                cv2.circle(frame, (x, y), 4, (0, 0, 255), -1)
+            for conn in HAND_CONNECTIONS:
+                p1 = hand_landmarks[conn[0]]
+                p2 = hand_landmarks[conn[1]]
+                x1, y1 = int(p1.x * self.frame_width), int(p1.y * self.frame_height)
+                x2, y2 = int(p2.x * self.frame_width), int(p2.y * self.frame_height)
+                cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 
-            landmarks_list = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
+            landmarks_list = [(lm.x, lm.y, getattr(lm, 'z', 0)) for lm in hand_landmarks]
             
         return frame, landmarks_list
 
