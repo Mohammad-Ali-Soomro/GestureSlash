@@ -113,7 +113,24 @@ class GameEngine:
                     self.running = False
 
     def draw(self, gesture):
-        self.screen.fill(DARK_BG)
+        if gesture.frame is not None:
+            # Convert frame from OpenCV BGR/RGB to Pygame Surface
+            import cv2
+            frame_rgb = cv2.cvtColor(gesture.frame, cv2.COLOR_BGR2RGB)
+            # Pygame expects (width, height, channels), so we swap axes
+            import numpy as np
+            frame_rgb = np.swapaxes(frame_rgb, 0, 1)
+            frame_surf = pygame.surfarray.make_surface(frame_rgb)
+            frame_surf = pygame.transform.scale(frame_surf, (SCREEN_WIDTH, SCREEN_HEIGHT))
+            
+            # Darken the camera feed slightly so the game elements pop
+            darken = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            darken.fill((0, 0, 0, 100))
+            frame_surf.blit(darken, (0, 0))
+            
+            self.screen.blit(frame_surf, (0, 0))
+        else:
+            self.screen.fill(DARK_BG)
         
         if self.state == STATE_PLAYING:
             for fruit in self.fruits:

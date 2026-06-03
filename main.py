@@ -26,9 +26,10 @@ def tracking_thread_fn(tracker, gesture_engine):
             
         if landmarks:
             fingertip = tracker.get_fingertip_pixel(landmarks, tracker.frame_width, tracker.frame_height)
-            state = gesture_engine.update(landmarks, fingertip, tracker.frame_width, tracker.frame_height, SCREEN_WIDTH, SCREEN_HEIGHT)
+            state = gesture_engine.update(landmarks, fingertip, tracker.frame_width, tracker.frame_height, SCREEN_WIDTH, SCREEN_HEIGHT, frame)
         else:
             state = gesture_engine.no_hand_state()
+            state.frame = frame
         
         with gesture_lock:
             current_gesture = state
@@ -40,6 +41,12 @@ def tracking_thread_fn(tracker, gesture_engine):
             cv2.imshow("GestureSlash - Camera", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 stop_event.set()
+        else:
+            from config import SHOW_LANDMARKS
+            if SHOW_LANDMARKS:
+                tracker.annotate_frame(frame, state)
+            # Give UI processing time so OpenCV doesn't hang or buffer infinitely
+            cv2.waitKey(1)
 
 def get_gesture():
     with gesture_lock:

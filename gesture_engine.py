@@ -11,15 +11,18 @@ class GestureState:
     is_fist: bool
     velocity: tuple
     hand_detected: bool
+    frame: object = None
 
 class GestureEngine:
     def __init__(self):
         self.pos_history = deque(maxlen=5)
         self.prev_cursor = (0, 0)
 
-    def update(self, landmarks, fingertip_pixel, cam_width, cam_height, screen_width, screen_height) -> GestureState:
+    def update(self, landmarks, fingertip_pixel, cam_width, cam_height, screen_width, screen_height, frame=None) -> GestureState:
         if not landmarks or not fingertip_pixel:
-            return self.no_hand_state()
+            state = self.no_hand_state()
+            state.frame = frame
+            return state
 
         # Map fingertip_pixel to screen coords
         screen_x = int(fingertip_pixel[0] / cam_width * screen_width)
@@ -61,9 +64,8 @@ class GestureEngine:
             cursor_pos=smoothed_cursor,
             is_slicing=is_slicing,
             is_pinching=is_pinching,
-            is_fist=is_fist,
-            velocity=velocity,
-            hand_detected=True
+            is_fist=is_fist,,
+            frame=frame
         )
 
     def no_hand_state(self) -> GestureState:
@@ -72,6 +74,9 @@ class GestureEngine:
             is_slicing=False,
             is_pinching=False,
             is_fist=False,
+            velocity=(0, 0),
+            hand_detected=False,
+            frame=Non
             velocity=(0, 0),
             hand_detected=False
         )
