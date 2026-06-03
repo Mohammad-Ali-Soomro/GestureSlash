@@ -47,6 +47,7 @@ class Fruit:
         self.rotation_speed = random.uniform(-4.0, 4.0)
         self.off_screen = False
         self.missed = False
+        self.letter = self.fruit_type[0].upper()
 
     def update(self, screen_height):
         self.vel[1] += self.gravity
@@ -67,6 +68,13 @@ class Fruit:
         # Shine effect
         shine_rect = pygame.Rect(center[0] - 8 - 5, center[1] - 8 - 5, 10, 10)
         pygame.draw.ellipse(surface, WHITE, shine_rect)
+
+        # Letter overlay
+        font = pygame.font.SysFont(None, int(self.radius * 1.5), bold=True)
+        text_surf = font.render(self.letter, True, WHITE)
+        rotated_surf = pygame.transform.rotate(text_surf, -self.rotation)
+        text_rect = rotated_surf.get_rect(center=center)
+        surface.blit(rotated_surf, text_rect)
 
     def check_slice(self, slice_points):
         if len(slice_points) < 2:

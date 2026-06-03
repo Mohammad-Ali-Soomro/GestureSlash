@@ -34,6 +34,9 @@ def tracking_thread_fn(tracker, gesture_engine):
             current_gesture = state
         
         if SHOW_CAMERA_WINDOW:
+            from config import SHOW_LANDMARKS
+            if SHOW_LANDMARKS:
+                tracker.annotate_frame(frame, state)
             cv2.imshow("GestureSlash - Camera", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 stop_event.set()

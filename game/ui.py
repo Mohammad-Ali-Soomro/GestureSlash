@@ -135,10 +135,8 @@ class GameUI:
         if not cursor_pos:
             return
             
-        color = (255, 100, 100) if is_slicing else (255, 255, 255)
-        radius = 12 if is_slicing else 8
-        width = 4 if is_slicing else 2
-        
-        pygame.draw.circle(surface, color, cursor_pos, radius, width)
-        pygame.draw.line(surface, color, (cursor_pos[0] - radius - 5, cursor_pos[1]), (cursor_pos[0] + radius + 5, cursor_pos[1]), 2)
-        pygame.draw.line(surface, color, (cursor_pos[0], cursor_pos[1] - radius - 5), (cursor_pos[0], cursor_pos[1] + radius + 5), 2)
+        if is_slicing:
+            pygame.draw.circle(surface, (200, 255, 255), cursor_pos, 12, 2)
+            pygame.draw.circle(surface, (0, 255, 255), cursor_pos, 8)
+        else:
+            pygame.draw.circle(surface, (255, 255, 255), cursor_pos, 10, 2)

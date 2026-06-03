@@ -1,4 +1,5 @@
 import cv2
+import time
 import mediapipe as mp
 
 class HandTracker:
@@ -13,6 +14,7 @@ class HandTracker:
             min_detection_confidence=detection_confidence
         )
         self.mp_drawing = mp.solutions.drawing_utils
+        self.prev_time = 0
 
     def get_frame_and_landmarks(self):
         success, frame = self.cap.read()
@@ -45,3 +47,23 @@ class HandTracker:
         if self.cap:
             self.cap.release()
         cv2.destroyAllWindows()
+
+    def annotate_frame(self, frame, gesture_state):
+        current_time = time.time()
+        fps = 0
+        if current_time - self.prev_time > 0:
+            fps = 1.0 / (current_time - self.prev_time)
+        self.prev_time = current_time
+        
+        cv2.putText(frame, f"FPS: {int(fps)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        
+        status_text = "IDLE"
+        if gesture_state:
+            if getattr(gesture_state, 'is_fist', False):
+                status_text = "FIST"
+            elif getattr(gesture_state, 'is_pinching', False):
+                status_text = "PINCHING"
+            elif getattr(gesture_state, 'is_slicing', False):
+                status_text = "SLICING"
+        
+        cv2.putText(frame, status_text, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)

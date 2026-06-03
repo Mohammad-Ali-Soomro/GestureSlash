@@ -31,9 +31,12 @@ class SliceTrail:
             p2 = points_list[i+1]
             
             avg_age = (p1[2] + p2[2]) / 2.0
-            alpha = int((avg_age / 18.0) * 255)
-            width = max(1, int((avg_age / 18.0) * 5))
-            color = (180, 240, 255, alpha)
+            ratio = avg_age / 18.0
+            
+            alpha = int(ratio * 255)
+            width = max(1, int(ratio * 5))
+            red = int(255 * ratio)
+            color = (red, 255, 255, alpha)
             
             pygame.draw.line(trail_surface, color, (p1[0], p1[1]), (p2[0], p2[1]), width)
             pygame.draw.circle(trail_surface, color, (int(p1[0]), int(p1[1])), width // 2)

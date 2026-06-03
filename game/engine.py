@@ -22,6 +22,7 @@ class GameEngine:
         self.score = 0
         self.lives = MAX_LIVES
         self.state = STATE_MENU
+        self.flash_alpha = 0
         
         self.slice_points = []
         self.running = True
@@ -82,6 +83,7 @@ class GameEngine:
                 if fruit.sliced or fruit.off_screen:
                     if fruit.missed and not fruit.sliced:
                         self.lives -= 1
+                        self.flash_alpha = 120
                     if fruit in self.fruits:
                         self.fruits.remove(fruit)
                     continue
@@ -127,5 +129,11 @@ class GameEngine:
             
         elif self.state == STATE_GAME_OVER:
             action = self.ui.draw_game_over(self.screen, self.score, gesture.cursor_pos, gesture.is_pinching)
+            
+        if self.flash_alpha > 0:
+            flash_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            flash_surf.fill((255, 0, 0, min(self.flash_alpha, 255)))
+            self.screen.blit(flash_surf, (0, 0))
+            self.flash_alpha = max(0, self.flash_alpha - 8)
             
         pygame.display.flip()
